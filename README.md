@@ -14,15 +14,15 @@ Most banks export statements in their own proprietary spreadsheet format. Accoun
 
 | Date | Day | Time | Type | Description 1 | Description 2 | Fee | Amount | Balance |
 |------|-----|------|------|---------------|---------------|-----|--------|---------|
-| 2025-12-12 | Fri | 08:16 | Pay in | SCBLZAJJ | BOOKING.COM BV... | 0 | 1167.67 | 1180.68 |
-| 2025-12-12 | Fri | 15:14 | Card purchase | Dischem Scottburgh | Kzn, Tap Transaction | 0 | -42.88 | 1137.80 |
+| 2025-12-12 | Fri | 08:16 | Pay in | ACME CLIENT | Invoice #1042 payment | 0 | 2500.00 | 3100.00 |
+| 2025-12-12 | Fri | 15:14 | Card purchase | Office Supplies Co | Tap Transaction | 0 | -84.50 | 3015.50 |
 
 **Output (Wave-ready CSV):**
 
 | Date | Description | Deposits | Withdrawals |
 |------|-------------|----------|-------------|
-| 2025-12-12 | SCBLZAJJ - BOOKING.COM BV... | 1,167.67 | |
-| 2025-12-12 | Dischem Scottburgh - Kzn, Tap Transaction | | 42.88 |
+| 2025-12-12 | ACME CLIENT - Invoice #1042 payment | 2,500.00 | |
+| 2025-12-12 | Office Supplies Co - Tap Transaction | | 84.50 |
 
 ---
 
