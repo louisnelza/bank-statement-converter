@@ -1,0 +1,40 @@
+{
+  "_comment": "Bank Zero → Wave Accounting import format. Edit column names to match your bank export headers.",
+
+  "source": {
+    "sheet": {
+      "contains": "Transactions"
+    },
+    "description_separator": " - ",
+    "columns": {
+      "date":        "Date",
+      "description1":"Description 1",
+      "description2":"Description 2",
+      "amount":      "Amount"
+    }
+  },
+
+  "output": {
+    "date_format": "%Y-%m-%d",
+    "thousands_separator": true,
+    "columns": [
+      {
+        "header": "Date",
+        "type":   "date"
+      },
+      {
+        "header":  "Description",
+        "type":    "description",
+        "sources": ["description1", "description2"]
+      },
+      {
+        "header": "Deposits",
+        "type":   "deposit"
+      },
+      {
+        "header": "Withdrawals",
+        "type":   "withdrawal"
+      }
+    ]
+  }
+}
