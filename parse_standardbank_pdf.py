@@ -80,12 +80,12 @@ MONTH_MAP = {
 }
 
 def parse_date(day, month, year_2digit):
-    """Convert ('16', 'Feb', '26') → '2026-02-16'."""
+    """Convert ('16', 'Feb', '26') → '16/02/2026'."""
     month_num = MONTH_MAP.get(month.lower())
     if not month_num:
         return None
     year = f"20{year_2digit.zfill(2)}"
-    return f"{year}-{month_num}-{int(day):02d}"
+    return f"{int(day):02d}/{month_num}/{year}"
 
 
 AMOUNT_RE = re.compile(r'^-?[\d,]+\.\d{2}$')
@@ -265,13 +265,20 @@ def extract_transactions(pdf_path):
 # CSV output
 # ─────────────────────────────────────────────────────────────────────────────
 
+SAGE_MIN_ROWS = 16  # Sage One ZA pads to at least 16 data rows
+
 def write_sage_csv(transactions, output_path):
-    """Write Sage One-compatible 3-column CSV: Date, Description, Amount."""
+    """Write Sage One ZA v2.0.0-compatible CSV: Date (DD/MM/YYYY), Description, Amount.
+    Pads to a minimum of 16 data rows with blank trailing rows as required by Sage.
+    """
+    padding = max(0, SAGE_MIN_ROWS - len(transactions))
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["Date", "Description", "Amount"])
         for tx in transactions:
             writer.writerow([tx["date"], tx["description"], f"{tx['amount']:.2f}"])
+        for _ in range(padding):
+            writer.writerow(["", "", ""])
     print(f"\n✅  Done! {len(transactions)} transaction(s) written to: {output_path}")
 
 
