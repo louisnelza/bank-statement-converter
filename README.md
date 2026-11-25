@@ -106,10 +106,10 @@ python converter.py january.xls wave_import.csv --config my_bank_config.json
 python parse_standardbank_pdf.py statement.pdf
 
 # Password-protected PDF (Standard Bank uses your SA ID number as the password)
-python parse_standardbank_pdf.py statement.pdf --password 8001015009087
+python parse_standardbank_pdf.py statement.pdf --ask-password
 
 # Specify output path
-python parse_standardbank_pdf.py statement.pdf sage_import.csv --password 8001015009087
+python parse_standardbank_pdf.py statement.pdf sage_import.csv --ask-password
 ```
 
 ---

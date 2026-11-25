@@ -1,0 +1,9 @@
+# Personal financial data - never commit
+*.csv
+*.xls
+*.xlsx
+*.pdf
+!example*.csv
+__pycache__/
+.venv/
+.env
