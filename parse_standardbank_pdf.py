@@ -12,11 +12,11 @@ Parses a Standard Bank credit card PDF statement and outputs a
 - Handles the two-column transaction table layout
 - Handles foreign currency rows (e.g. "Distrokid Musician 24.99 405.02")
   by stripping the foreign amount and using only the ZAR amount
-- Password-protected PDFs: pass --password <id_number>
+- Password-protected PDFs: use --ask-password (or STATEMENT_PASSWORD env var)
 
 Usage:
     python parse_standardbank_pdf.py <statement.pdf> [output.csv]
-    python parse_standardbank_pdf.py <statement.pdf> [output.csv] --password <id_number>
+    python parse_standardbank_pdf.py <statement.pdf> [output.csv] --ask-password
 
 Requirements:
     pip install -r requirements.txt   (pdfplumber, pypdf)
@@ -27,6 +27,7 @@ import sys
 import csv
 import os
 import argparse
+import getpass
 import subprocess
 import tempfile
 import shutil
@@ -45,10 +46,18 @@ def unlock_pdf(pdf_path, password):
     unlocked_path = os.path.join(tmp_dir, "unlocked.pdf")
 
     if shutil.which("qpdf"):
-        result = subprocess.run(
-            ["qpdf", f"--password={password}", "--decrypt", pdf_path, unlocked_path],
-            capture_output=True, text=True
-        )
+        # Pass the password via a private temp file, not argv (argv is visible in `ps`)
+        pw_path = os.path.join(tmp_dir, "pw.txt")
+        fd = os.open(pw_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(password)
+        try:
+            result = subprocess.run(
+                ["qpdf", f"--password-file={pw_path}", "--decrypt", pdf_path, unlocked_path],
+                capture_output=True, text=True
+            )
+        finally:
+            os.remove(pw_path)
         if result.returncode == 0 and os.path.exists(unlocked_path):
             return unlocked_path, tmp_dir
 
@@ -296,10 +305,23 @@ def main():
     parser.add_argument("output", nargs="?", help="Output CSV path (optional)")
     parser.add_argument(
         "--password",
-        help="PDF password if the statement is locked (usually your SA ID number)",
+        help="(Deprecated: visible in shell history/process list) PDF password. "
+             "Prefer --ask-password or the STATEMENT_PASSWORD environment variable.",
         default=None
     )
+    parser.add_argument(
+        "--ask-password", action="store_true",
+        help="Prompt for the PDF password without echoing it"
+    )
     args = parser.parse_args()
+
+    if args.ask_password:
+        args.password = getpass.getpass("PDF password: ")
+    elif args.password:
+        print("Warning: --password exposes the password in shell history; use --ask-password instead.",
+              file=sys.stderr)
+    else:
+        args.password = os.environ.get("STATEMENT_PASSWORD") or None
 
     if not os.path.isfile(args.source):
         print(f"Error: file not found — {args.source}")
@@ -328,7 +350,7 @@ def main():
                     _ = pdf.pages[0].extract_words()
             except Exception:
                 print("Error: This PDF appears to be password-protected.")
-                print("Re-run with: --password <your_id_number>")
+                print("Re-run with: --ask-password")
                 sys.exit(1)
 
         print(f"Parsing: {args.source}")
